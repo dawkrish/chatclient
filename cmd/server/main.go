@@ -29,6 +29,7 @@ func main() {
 	fmt.Println("Incoming conn: ", conn.LocalAddr())
 	if err != nil {
 		fmt.Println(err)
+		panic(err)
 	}
 
 	reader(conn)
@@ -41,6 +42,7 @@ func reader(conn net.Conn) {
 		if err != nil {
 			panic(err)
 		}
+		fmt.Println("line read on server: ", line)
 
 		n, err := conn.Write([]byte(line))
 		if err != nil {
