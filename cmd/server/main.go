@@ -38,13 +38,12 @@ func main() {
 func reader(conn net.Conn) {
 	for {
 		reader := bufio.NewReader(conn)
-		line, err := reader.ReadString('\n')
+		requestFromClient, err := reader.ReadString('\n')
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println("line read on server: ", line)
 
-		n, err := conn.Write([]byte(line))
+		n, err := conn.Write([]byte(requestFromClient))
 		if err != nil {
 			panic(err)
 		}

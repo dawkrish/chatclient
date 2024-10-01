@@ -22,13 +22,22 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	clientReader := bufio.NewReader(os.Stdin)
+	serverReader := bufio.NewReader(conn)
+
 	for {
 		fmt.Print("send: ")
-		reader := bufio.NewReader(conn)
-		line, err := reader.ReadString('\n')
+		clientInp, err := clientReader.ReadString('\n')
 		if err != nil {
 			panic(err)
 		}
-		conn.Write([]byte(line))
+		conn.Write([]byte(clientInp))
+
+		serverResp, err := serverReader.ReadString('\n')
+		if err != nil {
+			panic(err)
+		}
+		fmt.Print("recv :", serverResp)
 	}
 }
