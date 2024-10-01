@@ -40,7 +40,8 @@ func reader(conn net.Conn) {
 		reader := bufio.NewReader(conn)
 		requestFromClient, err := reader.ReadString('\n')
 		if err != nil {
-			panic(err)
+			fmt.Println("Connection Closed")
+			return
 		}
 
 		n, err := conn.Write([]byte(requestFromClient))

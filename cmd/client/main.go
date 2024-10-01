@@ -22,6 +22,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer conn.Close()
 
 	clientReader := bufio.NewReader(os.Stdin)
 	serverReader := bufio.NewReader(conn)
@@ -31,6 +32,11 @@ func main() {
 		clientInp, err := clientReader.ReadString('\n')
 		if err != nil {
 			panic(err)
+		}
+		if clientInp == "quit\n" || clientInp == "exit\n" {
+			fmt.Printf("See you later\n")
+			conn.Close()
+			return
 		}
 		conn.Write([]byte(clientInp))
 
