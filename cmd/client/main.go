@@ -26,9 +26,23 @@ func main() {
 
 	clientReader := bufio.NewReader(os.Stdin)
 	serverReader := bufio.NewReader(conn)
-
+	fmt.Print("name> ")
+	name, err := clientReader.ReadString('\n')
+	name = name[:len(name)-1]
+	if err != nil {
+		panic(err)
+	}
+	//srvMsgs := make(chan string)
+	go func() {
+		for {
+			serverResp, err := serverReader.ReadString('\n')
+			if err != nil {
+				panic(err)
+			}
+			fmt.Print(serverResp)
+		}
+	}()
 	for {
-		fmt.Print("send: ")
 		clientInp, err := clientReader.ReadString('\n')
 		if err != nil {
 			panic(err)
@@ -38,12 +52,7 @@ func main() {
 			conn.Close()
 			return
 		}
-		conn.Write([]byte(clientInp))
-
-		serverResp, err := serverReader.ReadString('\n')
-		if err != nil {
-			panic(err)
-		}
-		fmt.Print("recv :", serverResp)
+		sentence := name + ": " + clientInp
+		conn.Write([]byte(sentence))
 	}
 }
