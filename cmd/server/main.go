@@ -29,48 +29,39 @@ func main() {
 	defer ln.Close()
 	fmt.Printf("Starting %v Server on %v:%v\n", networkType, host, port)
 
-	msgs := make(chan string)
-
 	for {
 		conn, err := ln.Accept()
-		fmt.Println("Incoming conn: ", conn.LocalAddr())
+		fmt.Println("Incoming conn: ", conn.LocalAddr(), conn)
 		if err != nil {
 			fmt.Println(err)
 			panic(err)
 		}
 		clients = append(clients, conn)
-		go reader(conn, msgs)
-
-		go func() {
-			for {
-				msgRec := <-msgs
-				if msgRec == "exit" {
-					return
-				}
-				for _, c := range clients {
-					if c == conn {
-						continue
-					}
-					n, err := c.Write([]byte(msgRec))
-					if err != nil {
-						panic(err)
-					}
-					fmt.Println("bytes written to ", c, " ", n)
-				}
-			}
-		}()
+		go reader(conn)
 	}
 }
 
-func reader(conn net.Conn, msgs chan string) {
+func reader(conn net.Conn) {
+	reader := bufio.NewReader(conn)
+	closed := false
 	for {
-		reader := bufio.NewReader(conn)
 		requestFromClient, err := reader.ReadString('\n')
 		if err != nil {
-			fmt.Println("Connection Closed")
-			msgs <- "exit"
-			return
+			fmt.Println("Connection Closed:", requestFromClient)
+			closed = true
 		}
-		msgs <- requestFromClient
+		for _, c := range clients {
+			if c == conn {
+				continue
+			}
+			n, err := c.Write([]byte(requestFromClient))
+			if err != nil {
+				panic(err)
+			}
+			fmt.Println("bytes written to ", c, " ", n)
+		}
+		if closed {
+			break
+		}
 	}
 }

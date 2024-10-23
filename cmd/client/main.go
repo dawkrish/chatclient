@@ -24,24 +24,19 @@ func main() {
 	}
 	defer conn.Close()
 
+	go serverReader(conn)
+	clientReader(conn)
+}
+
+func clientReader(conn net.Conn) {
 	clientReader := bufio.NewReader(os.Stdin)
-	serverReader := bufio.NewReader(conn)
 	fmt.Print("name> ")
 	name, err := clientReader.ReadString('\n')
-	name = name[:len(name)-1]
 	if err != nil {
 		panic(err)
 	}
-	//srvMsgs := make(chan string)
-	go func() {
-		for {
-			serverResp, err := serverReader.ReadString('\n')
-			if err != nil {
-				panic(err)
-			}
-			fmt.Print(serverResp)
-		}
-	}()
+	name = name[:len(name)-1]
+
 	for {
 		clientInp, err := clientReader.ReadString('\n')
 		if err != nil {
@@ -49,10 +44,23 @@ func main() {
 		}
 		if clientInp == "quit\n" || clientInp == "exit\n" {
 			fmt.Printf("See you later\n")
+			conn.Write([]byte(name + " has exited!"))
 			conn.Close()
-			return
+			break
 		}
 		sentence := name + ": " + clientInp
 		conn.Write([]byte(sentence))
+	}
+}
+
+func serverReader(conn net.Conn) {
+	serverReader := bufio.NewReader(conn)
+	for {
+		serverResp, err := serverReader.ReadString('\n')
+		if err != nil {
+			conn.Close()
+			return
+		}
+		fmt.Print(serverResp)
 	}
 }
